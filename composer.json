@@ -4,6 +4,8 @@
   "version" : "1.0.0",
   "require" : {
     "phalcon/devtools": "dev-master",
-    "phalcon/incubator": "dev-master"
+    "phalcon/incubator": "dev-master",
+    "phpunit/phpunit": "4.5.*",
+    "phpunit/php-code-coverage": "2.0.*"
   }
 }
