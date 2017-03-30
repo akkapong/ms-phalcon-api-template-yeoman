@@ -1,0 +1,9 @@
+{
+  "name" : "Template Phalcon",
+  "description" : "Template falcon project for api",
+  "version" : "1.0.0",
+  "require" : {
+    "phalcon/devtools": "dev-master",
+    "phalcon/incubator": "dev-master"
+  }
+}

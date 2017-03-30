@@ -1,0 +1,8 @@
+# OS or Editor folders
+.DS_Store
+._*
+Thumbs.db
+.idea
+composer.lock
+/vendor
+/report

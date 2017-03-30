@@ -1,0 +1,24 @@
+version: '2'
+services:
+  
+  [dockerNmae]_api:
+    build: web/
+    tty: true
+    ports:
+      - "80[postgixPort]:80"
+    volumes:
+      - ../:/var/www/html
+    links:
+      - [dockerNmae]_mongo:mongo
+    environment:
+      ENVIRONMENT: docker
+    container_name: [dockerNmae]_api
+
+  [dockerNmae]_mongo:
+    build: mongo/
+    ports:
+      - "150[postgixPort]:1521"
+    container_name: [dockerNmae]_mongo
+
+
+
