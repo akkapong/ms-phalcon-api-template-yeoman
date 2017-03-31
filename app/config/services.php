@@ -90,6 +90,11 @@ $di->set('collectionManager', function () {
     return new Manager();
 }, true);
 
+// Register a "myLibrary" service in the container
+$di->set('myLibrary', function () {
+    $myLib =  new App\Library\MyLibrary();
+    return $myLib;
+});
 
 // Register a "response" service in the container
 $di->set('response', function () {
