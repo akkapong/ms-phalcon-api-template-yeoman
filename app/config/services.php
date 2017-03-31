@@ -5,6 +5,9 @@ use Phalcon\Mvc\Router;
 use Phalcon\Http\Request;
 use Phalcon\Http\Response;
 
+use Phalcon\Mvc\Collection\Manager;
+use Phalcon\Db\Adapter\MongoDB\Client;
+
 // Create a DI
 $di = new FactoryDefault();
 
@@ -89,6 +92,7 @@ $di->setShared('mongo', function () {
 $di->set('collectionManager', function () {
     return new Manager();
 }, true);
+
 
 // Register a "myLibrary" service in the container
 $di->set('myLibrary', function () {
