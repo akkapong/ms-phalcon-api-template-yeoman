@@ -8,7 +8,9 @@ try {
     /**
      * Read the configuration
      */
-    $config   = include __DIR__ . "/../app/config/config.php";
+    $config  = include __DIR__ . "/../app/config/config.php";
+    $status  = include __DIR__ . "/../app/config/status.php";
+    $message = include __DIR__ . "/../app/config/message.php";
     /**
      * Read auto-loader
      */

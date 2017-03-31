@@ -114,3 +114,5 @@ $di->set('request', function () {
 
 //add config and message
 $di->set('config', $config, true);
+$di->set('status', $status, true);
+$di->set('message', $message, true);
