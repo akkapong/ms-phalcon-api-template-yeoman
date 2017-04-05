@@ -195,6 +195,26 @@ class MongoService {
         return $outputs;
     }
 
+    //Method for manage sort data bt id list
+    public function manageSortDataByIdList($datas, $id)
+    {
+        //Define outputs
+        $outputs = [];
+
+        //get id
+        $ids = explode($this->idDelimeter, $id);
+
+        foreach ($ids as $id) {
+            foreach ($datas as $data) {
+                if ($data['id'] == $id) {
+                    $outputs[] = $data;
+                    break;
+                }
+            }
+        }
+        return $outputs;
+    }
+
     //Method for get category detail
     public function getDetailDataById($model, $id, $allowFilter)
     {

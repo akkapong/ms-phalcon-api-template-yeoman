@@ -410,6 +410,35 @@ class MongoServiceTest extends UnitTestCase
         //check result
         $this->assertEquals(-1, $result);
     }
+
+    public function testManageSortDataByIdList()
+    {
+        //create class
+        $class = new MongoService();
+
+        //call method
+        $result = $class->manageSortDataByIdList([
+            [
+                'id'   => '111',
+                'name' => 'Test 1'
+            ],[
+                'id'   => '222',
+                'name' => 'Test 2'
+            ],[
+                'id'   => '333',
+                'name' => 'Test 3'
+            ]
+        ], '222,111,333');
+
+        //check result
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('id', $result[0]);
+        $this->assertEquals('222', $result[0]['id']);
+        $this->assertArrayHasKey('id', $result[1]);
+        $this->assertEquals('111', $result[1]['id']);
+        $this->assertArrayHasKey('id', $result[2]);
+        $this->assertEquals('333', $result[2]['id']);
+    }
     
     public function testManageOrderInParamsNoOrder()
     {
