@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="./tests/TestHelper.php"
+         backupGlobals="false"
+         backupStaticAttributes="false"
+         verbose="true"
+         colors="false"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         syntaxCheck="true">
+    <testsuite name="Api">
+        <directory>./tests/api/ApiControllerTest.php</directory>
+    </testsuite>
+    
+    <!-- <testsuite name="Category">
+        <directory>./tests/category/CategoryControllerTest.php</directory>
+        <directory>./tests/category/CategoryRepositoryTest.php</directory>
+    </testsuite> -->
+
+    <testsuite name="Service">
+        <directory>./tests/services/MongoServiceTest.php</directory>
+    </testsuite>
+
+    <testsuite name="Library">
+        <directory>./tests/library/MyLibraryTest.php</directory>
+    </testsuite>
+
+    <filter>
+        <blacklist>
+            <directory>./vendor</directory>
+            <directory>./public</directory>
+            <directory>./tests</directory>
+        </blacklist>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./tests</directory>
+        </whitelist>
+    </filter>
+</phpunit>

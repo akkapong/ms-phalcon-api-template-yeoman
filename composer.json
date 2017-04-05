@@ -7,5 +7,8 @@
     "phalcon/incubator": "3.0.4",
     "phpunit/phpunit": "4.5.*",
     "phpunit/php-code-coverage": "2.0.*"
+  },
+  "require-dev": {
+    "mockery/mockery": "dev-master"
   }
 }

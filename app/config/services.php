@@ -100,6 +100,12 @@ $di->set('myLibrary', function () {
     return $myLib;
 });
 
+// Register a "mongoService" service in the container
+$di->set('mongoService', function () {
+    $myLib =  new App\Services\MongoService();
+    return $myLib;
+});
+
 // Register a "response" service in the container
 $di->set('response', function () {
     $response = new Response();

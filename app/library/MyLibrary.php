@@ -2,51 +2,35 @@
 namespace App\Library;
 
 class MyLibrary {
-    
-    //Method for format output
-    public function formatOutput($model)
-    {
-        //Define output
-        $output = [];
 
-        if (!empty($model)) {
-            //add id to output
-            $output       = $model->toArray();
-            $output["id"] = (string)$model->_id;
-            unset($output["_id"]);
+    //Method for add lang to key params
+    public function addLangToKeyParams($params, $keys, $lang='en')
+    {
+        foreach ($keys as $key) {
+            if (isset($params[$key])) {
+                $params[$key.".".$lang] = $params[$key];
+                //remove old
+                unset($params[$key]);
+            }
         }
-        
-        return $output;
+        return $params;
     }
-
     
-    //Method for get data by filter
-    public function getDataByFilter($model, $filter, $isFormatOutput=true)
+    //Method for add language to allow filter
+    public function addLangToAllowFilter($allowFilters, $keys, $lang='en')
     {
-        //Define output
-        $outputs = [];
-        
-        if (isset($filter['id'])) {
-            $dataObj = $model->findById($filter['id']);
-            if ($isFormatOutput) {
-                $outputs = $this->formatOutput($dataObj);
-            } else {
-                $outputs = $dataObj;
-            }
-        } else {
-            $modelDatas   =  $model->find([$filter]);
-            if (!empty($modelDatas)) {
-                foreach ($modelDatas as $each) {
-                    if ($isFormatOutput) {
-                        $outputs[] = $this->formatOutput($each);
-                    } else {
-                        $outputs[] = $each;
-                    }
-                }
+        foreach ($keys as $key) {
+            if (in_array($key, $allowFilters)) {
+                //get index
+                $index = array_search($key, $allowFilters);
+                //remove old fron index
+                unset($allowFilters[$index]);
+                //add new one
+                $allowFilters[] = $key.".".$lang;
+                
             }
         }
-        
-        return $outputs;
+        return $allowFilters;
     }
 
     //Method for create filter remove not allow filter
@@ -62,58 +46,5 @@ class MyLibrary {
         return $filters;
     }
 
-    //Method for create condition filter
-    public function createConditionFilter($params, $options)
-    {
-        //Define output
-        $conditions = [];
-
-        //manage limit offset data
-        $params = $this->manageLimitOffsetInParams($params);
-
-        foreach ($params as $key => $value) {
-            if (isset($options[$key])) {
-                $conditions[$key] = [
-                    $options[$key] => $value
-                ];
-            } else {
-                $conditions[$key] = $value;
-            }
-        }
-        return $conditions;
-    }
-
-    //Method for manage limit offset
-    public function manageLimitOffsetInParams($params)
-    {
-        if (isset($params['limit'])) {
-            $params['limit'] = (int)$params['limit'];
-        }
-
-        if (isset($params['offset'])) {
-            $params['skip'] = (int)$params['offset'];
-            //remove offset
-            unset($params['offset']);
-        }
-
-        return $params;
-    }
-
-    //method for add id to data
-    public function addIdTodata($dataObj, $multi=true)
-    {
-        //Define output
-        $outputs = [];
-        if (!$multi) {
-            //one data
-            $outputs = $this->formatOutput($dataObj);
-        } else {
-            //multi
-            foreach ($dataObj as $each) {
-                $outputs[] = $this->formatOutput($each);
-            }
-        }
-
-        return $outputs;
-    }
+    
 }
