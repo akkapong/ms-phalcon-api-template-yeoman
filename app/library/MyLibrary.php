@@ -39,7 +39,7 @@ class MyLibrary {
         //Define output
         $filters = [];
         foreach ($params as $key => $value) {
-            if (in_array($ket, $allows)) {
+            if (in_array($key, $allows)) {
                 $filters[$key] = $value;
             }
         }
