@@ -93,6 +93,17 @@ $di->set('collectionManager', function () {
     return new Manager();
 }, true);
 
+// Register a "repository" service in the container
+$di->set('repository', function () {
+    $repository =  new App\Repositories\Repositories();
+    return $repository;
+});
+
+// Register a "model" service in the container
+$di->set('model', function () {
+    $model =  new App\Models\Models();
+    return $model;
+});
 
 // Register a "myLibrary" service in the container
 $di->set('myLibrary', function () {
