@@ -227,6 +227,58 @@ class ApiControllerTest extends UnitTestCase
         $this->assertEquals($result, []);
     }
 
+    public function testValidateNotInWithin()
+    {
+        //Define parameter
+        $rules = [
+            [
+                'type'   => 'within',
+                'fields' => ['test1' => ['111', '222']],
+            ],
+        ];
+        $input = [
+            'test1' => "11111",
+        ];
+
+        $api = new ApiController();
+
+        $result = $this->callMethod(
+            $api,
+            'validate',
+            [$input, $rules]
+        );
+
+        //check result
+        $this->assertInternalType('array', $result);
+        $this->assertEquals($result['error'], 'The test1 must be in 111 , 222');
+    }
+
+    public function testValidateInWithin()
+    {
+        //Define parameter
+        $rules = [
+            [
+                'type'   => 'within',
+                'fields' => ['test1' => ['111', '222']],
+            ],
+        ];
+        $input = [
+            'test1' => "111",
+        ];
+
+        $api = new ApiController();
+
+        $result = $this->callMethod(
+            $api,
+            'validate',
+            [$input, $rules]
+        );
+
+        //check result
+        $this->assertInternalType('array', $result);
+        $this->assertEquals($result, []);
+    }
+
     public function testValidateSuccess()
     {
         //Define parameter
@@ -639,6 +691,50 @@ class ApiControllerTest extends UnitTestCase
         //check result
         $this->assertInternalType('array', $result);
         $this->assertEquals($result['error'][0], 'invalidTerminalID');
+    }
+
+    public function testGetLanguageFromHeaderNoLang()
+    {
+        //Mock request
+        $request = Mockery::mock('Request');
+        $request->shouldReceive('getHeaders')->andReturn([]);
+
+        //register
+        $this->di->set('request', $request, true);
+
+        //create class
+        $api = new ApiController();
+
+        $result = $this->callMethod(
+            $api,
+            'getLanguageFromHeader',
+            []
+        );
+
+        //check result
+        $this->assertEquals('en', $result);
+    }
+
+    public function testGetLanguageFromHeaderHaveLang()
+    {
+        //Mock request
+        $request = Mockery::mock('Request');
+        $request->shouldReceive('getHeaders')->andReturn(['Language' => 'th']);
+
+        //register
+        $this->di->set('request', $request, true);
+
+        //create class
+        $api = new ApiController();
+        
+        $result = $this->callMethod(
+            $api,
+            'getLanguageFromHeader',
+            []
+        );
+
+        //check result
+        $this->assertEquals('th', $result);
     }
 
     //------- end: Test function ---------//

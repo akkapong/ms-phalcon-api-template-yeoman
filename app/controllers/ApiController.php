@@ -5,6 +5,7 @@ use Phalcon\DI;
 use Phalcon\Validation;
 use Phalcon\Validation\Validator\Numericality;
 use Phalcon\Validation\Validator\PresenceOf;
+use Phalcon\Validation\Validator\InclusionIn;
 
 class ApiController extends \Phalcon\Mvc\Micro
 {
@@ -74,6 +75,15 @@ class ApiController extends \Phalcon\Mvc\Micro
                         ]));
                     }
 
+                    break;
+
+                case 'within':
+                    foreach ( $value['fields'] as $key => $list ) {
+                        $validation->add( $key, new InclusionIn( [
+                            'message' => 'The '.$key.' must be in '.implode(" , ", $list),
+                            'domain'  => $list
+                        ]));
+                    }
                     break;
 
                 default:
