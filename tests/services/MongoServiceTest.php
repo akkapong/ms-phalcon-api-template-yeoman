@@ -482,17 +482,21 @@ class MongoServiceTest extends UnitTestCase
         $class->method('convertOrderType')
             ->willReturn(1);
 
-        //call method
-        $result = $class->manageOrderInParams([
-            'order_by' => 'name:asc,description,name1:desc'
-        ], [], ['name', 'description']);
+        $params = [
+            'start_date' => '2017-04-27',
+            'end_date'   => '2017-07-27',
+            'order_by'   => 'date_time:asc'
+        ];
+        $allowFilter = ['date_time'];
+
+        $result = $class->manageOrderInParams($params,[], $allowFilter);
 
         //check result
         $this->assertInternalType('array', $result);
         $this->assertArrayHasKey('sort', $result);
         $this->assertEquals(1, count($result['sort']));
-        $this->assertArrayHasKey('name', $result['sort']);
-        $this->assertEquals(1, $result['sort']['name']);
+        $this->assertArrayHasKey('date_time', $result['sort']);
+        $this->assertEquals(1, $result['sort']['date_time']);
     }
     //------- end: Test function --------//
 }
