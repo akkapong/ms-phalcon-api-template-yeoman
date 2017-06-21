@@ -3,7 +3,7 @@
   "description" : "Template falcon project for api",
   "version" : "1.0.0",
   "require" : {
-    "phalcon/devtools": "dev-master",
+    "phalcon/devtools": "3.0.*",
     "phalcon/incubator": "3.0.4",
     "phpunit/phpunit": "4.5.*",
     "phpunit/php-code-coverage": "2.0.*"
