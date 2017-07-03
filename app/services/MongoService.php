@@ -235,4 +235,34 @@ class MongoService {
 
         return $datas;
     }
+
+    //Method for manage between filter
+    public function manageBetweenFilter(&$params, &$options)
+    {
+        $betweenKeys = [];
+        if (isset($params['between_key'])) {
+            $betweenKeys = explode(",", $params['between_key']);
+        }
+
+        if (empty($betweenKeys)) {
+            return $params;
+        }
+
+        foreach ($betweenKeys as $key) {
+            if (isset($params[$key.'_start']) && isset($params[$key.'_end'])) {
+                $params[$key] = [$params[$key.'_start'], $params[$key.'_end']];
+
+                //add option
+                $options[$key] = ['$gte', '$lte'];
+                //remove old key
+                unset($params[$key.'_start']);
+                unset($params[$key.'_end']);
+            }
+        }
+
+        return $params;
+        
+    }
+
+    
 }

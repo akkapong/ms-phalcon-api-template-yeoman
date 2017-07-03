@@ -498,5 +498,67 @@ class MongoServiceTest extends UnitTestCase
         $this->assertArrayHasKey('date_time', $result['sort']);
         $this->assertEquals(1, $result['sort']['date_time']);
     }
+
+    public function testManageBetweenFilterNoKey()
+    {
+        //create class
+        $class = new MyLibrary();
+
+        $params  = [
+            'date_start' => '2017-01-01', 
+            'date_end'   => '2017-05-01',
+        ];
+        $options = [];
+        //call method
+        $result = $class->manageBetweenFilter($params, $options);
+
+        //check result
+        $this->assertInternalType('array', $result);
+        $this->assertEquals($params, $result);
+    }
+
+    public function testManageBetweenFilterHaveKeyDateWrong()
+    {
+        //create class
+        $class = new MyLibrary();
+
+        $params  = [
+            'date_start'  => '2017-01-01', 
+            'between_key' => 'date',
+        ];
+        $options = [];
+
+        //call method
+        $result = $class->manageBetweenFilter($params, $options);
+
+        //check result
+        $this->assertInternalType('array', $result);
+        $this->assertEquals($params, $result);
+    }
+
+    public function testManageBetweenFilterHaveKeySuccess()
+    {
+        //create class
+        $class   = new MyLibrary();
+        
+        $params  = [
+            'date_start'  => '2017-01-01', 
+            'date_end'    => '2017-05-01',
+            'between_key' => 'date',
+        ];
+        $options = [];
+
+        //call method
+        $result = $class->manageBetweenFilter($params, $options);
+
+        //check result
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('date', $result);
+        $this->assertArrayNotHasKey('date_start', $result);
+        $this->assertArrayNotHasKey('date_end', $result);
+        $this->assertInternalType('array', $result['date']);
+        $this->assertInternalType('array', $options);
+        $this->assertArrayHasKey('date', $options);
+    }
     //------- end: Test function --------//
 }
