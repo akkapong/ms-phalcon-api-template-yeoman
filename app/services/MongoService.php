@@ -55,17 +55,24 @@ class MongoService {
 
         } else {
             //remove '%'
-            $value = substr($value, 1);
-            
+            if (strlen($value) > 1) {
+                $value = substr($value, 1);
+            }
         } 
 
         //check last
         if (substr($value, -1) == '%') {
             //found '%' at last : remove it
-            $value = substr_replace($value, "", -1);
+            if (strlen($value) > 1) {
+                $value = substr_replace($value, "", -1);
+            }
+            
         } else {
             // not found '%' at last : add end with syntax '$'
-            $value .= '$';
+            if (!empty($value)) {
+                $value .= '$';
+            }
+            
         }
 
         return [true, $value];
@@ -97,9 +104,11 @@ class MongoService {
         
         if ($res[0]) {
             //search like
+            $val = str_replace('%', '\\%', $res[1]);
             $conditions[$key] = [
-                '$regex' => $res[1]
+                '$regex' => $val
             ];
+
         } else {
 
             if ($value == 'null') {
@@ -108,7 +117,7 @@ class MongoService {
                 $conditions[$key] = $value;
             }
         }
-
+        
         return $conditions;
                 
     }
