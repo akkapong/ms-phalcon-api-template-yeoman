@@ -57,10 +57,34 @@ class MongoServiceTest extends UnitTestCase
         $this->assertFalse(isset($result['_id']));
     } 
 
-    public function testConvertValueForSearchLikeNoPercent()
+    public function testReplaceSpecialKeyOfRegex()
     {
         //create class
         $class = new MongoService();
+
+        //create parameter
+        $params = ['ss$dd)gg^'];
+
+        //call method
+        $result = $this->callMethod(
+            $class,
+            'replaceSpecialKeyOfRegex',
+            $params
+        );
+        
+        //check result
+        $this->assertEquals('ss\\$dd\\)gg\\^', $result);
+    }
+
+    public function testConvertValueForSearchLikeNoPercent()
+    {
+        //creste class
+        $class = $this->getMockBuilder('App\Services\MongoService')
+                    ->setMethods(['replaceSpecialKeyOfRegex'])
+                    ->getMock();
+
+        $class->method('replaceSpecialKeyOfRegex')
+            ->willReturn("Test");
 
         //create parameter
         $params = ["Test"];
@@ -79,8 +103,13 @@ class MongoServiceTest extends UnitTestCase
 
     public function testConvertValueForSearchLikePercentAtLast()
     {
-        //create class
-        $class = new MongoService();
+        //creste class
+        $class = $this->getMockBuilder('App\Services\MongoService')
+                    ->setMethods(['replaceSpecialKeyOfRegex'])
+                    ->getMock();
+
+        $class->method('replaceSpecialKeyOfRegex')
+            ->willReturn("Te%");
 
         //create parameter
         $params = ["Te%"];
@@ -99,8 +128,14 @@ class MongoServiceTest extends UnitTestCase
 
     public function testConvertValueForSearchLikePercentAtFirst()
     {
-        //create class
-        $class = new MongoService();
+        //creste class
+        $class = $this->getMockBuilder('App\Services\MongoService')
+                    ->setMethods(['replaceSpecialKeyOfRegex'])
+                    ->getMock();
+
+        $class->method('replaceSpecialKeyOfRegex')
+            ->willReturn("%est");
+
 
         //create parameter
         $params = ["%est"];
@@ -119,8 +154,13 @@ class MongoServiceTest extends UnitTestCase
 
     public function testConvertValueForSearchLikePercentAtFirstAndLast()
     {
-        //create class
-        $class = new MongoService();
+        //creste class
+        $class = $this->getMockBuilder('App\Services\MongoService')
+                    ->setMethods(['replaceSpecialKeyOfRegex'])
+                    ->getMock();
+
+        $class->method('replaceSpecialKeyOfRegex')
+            ->willReturn("%es%");
 
         //create parameter
         $params = ["%es%"];
@@ -199,14 +239,26 @@ class MongoServiceTest extends UnitTestCase
     {
         //creste class
         $class = $this->getMockBuilder('App\Services\MongoService')
-                    ->setMethods(['manageFilterValue'])
+                    ->setMethods(['manageFilterValue', 'manangeBetweenCondition'])
                     ->getMock();
 
         $class->method('manageFilterValue')
             ->willReturn(['key1' => 'Test1']);
 
+        $class->method('manangeBetweenCondition')
+            ->willReturn([
+                'key1' => 'Test1',
+                'key3' => [
+                    '$in' => ['Test3']
+                ],
+                'key4' => [
+                    '$gte' => 1,
+                    '$lte' => 5,
+                ]
+            ]);
+
         //call method
-        $result = $class->createConditionFilter(['key1' => 'Test1', 'key2' => 'Test2', 'key3' => ['Test3']], ['key1', 'key3'], ['key3' => '$in']);
+        $result = $class->createConditionFilter(['key1' => 'Test1', 'key2' => 'Test2', 'key3' => ['Test3'], 'key4' => [1,5]], ['key1', 'key3', 'key4'], ['key3' => '$in', 'key4' => ['$gte', '$lte']]);
 
         //check result
         $this->assertInternalType('array', $result);
@@ -482,27 +534,23 @@ class MongoServiceTest extends UnitTestCase
         $class->method('convertOrderType')
             ->willReturn(1);
 
-        $params = [
-            'start_date' => '2017-04-27',
-            'end_date'   => '2017-07-27',
-            'order_by'   => 'date_time:asc'
-        ];
-        $allowFilter = ['date_time'];
-
-        $result = $class->manageOrderInParams($params,[], $allowFilter);
+        //call method
+        $result = $class->manageOrderInParams([
+            'order_by' => 'name:asc,description,name1:desc'
+        ], [], ['name', 'description']);
 
         //check result
         $this->assertInternalType('array', $result);
         $this->assertArrayHasKey('sort', $result);
         $this->assertEquals(1, count($result['sort']));
-        $this->assertArrayHasKey('date_time', $result['sort']);
-        $this->assertEquals(1, $result['sort']['date_time']);
+        $this->assertArrayHasKey('name', $result['sort']);
+        $this->assertEquals(1, $result['sort']['name']);
     }
 
     public function testManageBetweenFilterNoKey()
     {
         //create class
-        $class = new MyLibrary();
+        $class = new MongoService();
 
         $params  = [
             'date_start' => '2017-01-01', 
@@ -520,7 +568,7 @@ class MongoServiceTest extends UnitTestCase
     public function testManageBetweenFilterHaveKeyDateWrong()
     {
         //create class
-        $class = new MyLibrary();
+        $class = new MongoService();
 
         $params  = [
             'date_start'  => '2017-01-01', 
@@ -539,7 +587,7 @@ class MongoServiceTest extends UnitTestCase
     public function testManageBetweenFilterHaveKeySuccess()
     {
         //create class
-        $class   = new MyLibrary();
+        $class   = new MongoService();
         
         $params  = [
             'date_start'  => '2017-01-01', 

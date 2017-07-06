@@ -23,9 +23,24 @@ class MongoService {
         return $output;
     }
 
+    //Method for replace special key of regex
+    protected function replaceSpecialKeyOfRegex($value)
+    {
+        $keys = ['(', ')', '*', '$', '^'];
+
+        foreach ($keys as $key) {
+            $value = str_replace($key, '\\'.$key, $value);
+        }
+
+        return $value;
+    }
+
     //Method for convert param to search like format
     protected function convertValueForSearchLike($value)
     {
+        //replace special key
+        $value = $this->replaceSpecialKeyOfRegex($value);
+
         //get index of '%''
         $index = strpos($value, "%");
         if ($index === FALSE) {
@@ -56,6 +71,24 @@ class MongoService {
         return [true, $value];
     }  
 
+
+     //Method for manange between condition 
+    protected function manangeBetweenCondition($conditions, $params, $key, $options)
+    {
+        // if (!isset($params[$key]) || (count($params[$key]) != 2)) {
+        //     return $conditions;
+        // }
+
+        $conditions[$key] = [];
+        $count            = 0;
+        foreach ($options as $option) {
+            $conditions[$key][$option] = $params[$key][$count];
+            $count++;
+        }
+
+        return $conditions;
+    }
+
     //Method for manage fileter value support search like
     public function manageFilterValue($key, $value, $conditions)
     {
@@ -80,19 +113,25 @@ class MongoService {
                 
     }
 
-    //Method for create condition filter
+       //Method for create condition filter
     public function createConditionFilter($params, $allowFilter, $options=[])
     {
+       
         //Define output
         $conditions = [];
-
         foreach ($params as $key => $value) {
             //check allow filter
             if (in_array($key, $allowFilter)) {
                if (isset($options[$key])) {
-                    $conditions[$key] = [
-                        $options[$key] => $value
-                    ];
+                    if (is_array($options[$key]) && is_array($value)) {
+                        $conditions = $this->manangeBetweenCondition($conditions, $params, $key, $options[$key]);
+                    
+                    } else {
+                        $conditions[$key] = [
+                            $options[$key] => $value
+                        ];
+                    }
+                    
                 } else {
                     $conditions = $this->manageFilterValue($key, $value, $conditions);
                 }
@@ -102,6 +141,7 @@ class MongoService {
         
         return $conditions;
     }
+
 
     //Method for manage limit offset
     public function manageLimitOffsetInParams($params, $filters)
@@ -136,6 +176,7 @@ class MongoService {
             $filters['sort'] = [];
             foreach ($orders as $order) {
                 $vals = explode($this->orderDelimeterVal, $order);
+
                 if (count($vals) == 2) {
                     if (in_array($vals[0], $allowFilter)){
                         $filters['sort'][$vals[0]] = $this->convertOrderType($vals[1]);
@@ -249,20 +290,22 @@ class MongoService {
         }
 
         foreach ($betweenKeys as $key) {
-            if (isset($params[$key.'_start']) && isset($params[$key.'_end'])) {
-                $params[$key] = [$params[$key.'_start'], $params[$key.'_end']];
 
-                //add option
-                $options[$key] = ['$gte', '$lte'];
-                //remove old key
-                unset($params[$key.'_start']);
-                unset($params[$key.'_end']);
-            }
+                if (isset($params[$key.'_start'])) {
+                    $params[$key][]  = $params[$key.'_start'];
+                    $options[$key][] = '$gte';
+                    unset($params[$key.'_start']);
+                }
+
+                if (isset($params[$key.'_end'])) {
+                    $params[$key][]  = $params[$key.'_end'];
+                    $options[$key][] = '$lte';
+                     unset($params[$key.'_end']);
+                }
+
         }
 
         return $params;
         
     }
-
-    
 }
