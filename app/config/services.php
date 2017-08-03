@@ -90,6 +90,28 @@ $di->setShared('mongo', function () {
     return $mongo->selectDatabase($config->database->mongo->dbname);
 });
 
+// Initialise the mongo DB connection (original).
+$di->setShared('mongoOrig', function () {
+    $config = $this->getShared('config');
+
+    if (!$config->database->mongo->username || !$config->database->mongo->password) {
+        $dsn = 'mongodb://' . $config->database->mongo->host.":". $config->database->mongo->port;
+    } else {
+        $dsn = sprintf(
+            'mongodb://%s:%s@%s:%s/%s',
+            $config->database->mongo->username,
+            $config->database->mongo->password,
+            $config->database->mongo->host,
+            $config->database->mongo->port,
+            $config->database->mongo->dbname
+        );
+    }
+
+    $mongo = new \MongoDB\Driver\Manager($dsn);
+
+    return $mongo;
+});
+
 $di->set('collectionManager', function () {
     return new Manager();
 }, true);

@@ -69,5 +69,46 @@ class MyLibraryTest extends UnitTestCase
         $this->assertEquals('Test', $result['name']);
         $this->assertFalse(isset($result['desc']));
     }
+
+    public function testObjectToArray()
+    {
+        //create object
+        $obj2 = new StdClass;
+        $obj2->sub1 = ['k2s1'];
+        $obj2->sub2 = 'k2s2';
+        $obj3 = new StdClass;
+        $obj3->sub1 = 'k3s2ss1';
+        $obj = new StdClass;
+        $obj->key1 = 'k1';
+        $obj->key2 = $obj2;
+        $obj->key3 = [
+            'sub1' => 'k3s1',
+            'sub2' => $obj3,
+        ];
+        //create class
+        $class = new MyLibrary();
+
+        //call method
+        $result = $class->objectToArray($obj);
+
+        //check result
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('key1', $result);
+        $this->assertArrayHasKey('key2', $result);
+        $this->assertArrayHasKey('key3', $result);
+        $this->assertEquals('k1', $result['key1']);
+        $this->assertInternalType('array', $result['key2']);
+        $this->assertArrayHasKey('sub1', $result['key2']);
+        $this->assertArrayHasKey('sub2', $result['key2']);
+        $this->assertInternalType('array', $result['key2']['sub1']);
+        $this->assertEquals('k2s2', $result['key2']['sub2']);
+        $this->assertInternalType('array', $result['key3']);
+        $this->assertArrayHasKey('sub1', $result['key3']);
+        $this->assertArrayHasKey('sub2', $result['key3']);
+        $this->assertEquals('k3s1', $result['key3']['sub1']);
+        $this->assertInternalType('array', $result['key3']['sub2']);
+        $this->assertArrayHasKey('sub1', $result['key3']['sub2']);
+        $this->assertEquals('k3s2ss1', $result['key3']['sub2']['sub1']);
+    }
     //------- end: Test function --------//
 }

@@ -46,5 +46,22 @@ class MyLibrary {
         return $filters;
     }
 
-    
+    //Method for convert deep object to array
+    public function objectToArray($obj) 
+    {
+        if (is_object($obj)) {
+            $obj = (array)$obj;
+        }
+
+        $new = [];
+        if (is_array($obj)) {
+            foreach($obj as $key => $val) {
+                $new[$key] = $this->objectToArray($val);
+            }
+        } else {
+            $new = $obj;
+        }
+
+        return $new;       
+    }
 }

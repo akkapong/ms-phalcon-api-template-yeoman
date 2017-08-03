@@ -608,5 +608,79 @@ class MongoServiceTest extends UnitTestCase
         $this->assertInternalType('array', $options);
         $this->assertArrayHasKey('date', $options);
     }
+
+    public function testManageId()
+    {
+        //create class
+        $class = new MongoService();
+
+        //create parameter
+        $params = ['58abd2f22f8331000a3acb91,58abd2f22f8331000a3acb82'];
+
+        //call method
+        $result = $this->callMethod(
+            $class,
+            'manageId',
+            $params
+        );
+        
+        //check result
+        $this->assertCount(2, $result);
+    }
+
+    public function testGetDetailDataByIdLargeData()
+    {
+        //mock config
+        $config = new \Phalcon\Config([
+            'database' => [
+                'mongo' => [
+                    'host'     => '192.168.200.69',
+                    'port'     => '27017',
+                    'username' => 'rpp_mtransaction',
+                    'password' => '1qaz2wsx',
+                    'dbname'   => 'rpp_mtransaction',
+                ],
+            ]        
+        ]);
+        //register model
+        $this->di->set('config', $config, true);
+
+        $data = new StdClass;
+        $data->_id = '58abd2f22f8331000a3acb91';
+        $data->key1 = 'k1';
+        $data->key2 = 'k2';
+
+        //mock mongoOrig
+        $mongoOrig = Mockery::mock('MONGOORIGIN');
+        $mongoOrig->shouldReceive('executeQuery')->andReturn([
+            $data
+        ]);
+        //register model
+        $this->di->set('mongoOrig', $mongoOrig, true);
+
+        //create class
+        $class = $this->getMockBuilder('App\Services\MongoService')
+                    ->setMethods(['manageId'])
+                    ->getMock();
+
+        $class->method('manageId')
+            ->willReturn([
+                new \MongoDB\BSON\ObjectID('58abd2f22f8331000a3acb91'),
+                new \MongoDB\BSON\ObjectID('58abd2f22f8331000a3acb82'),
+            ]);
+
+        $collection = Mockery::mock('COLLECTION');
+
+        //call method
+        $result = $class->getDetailDataByIdLargeData($collection, '58abd2f22f8331000a3acb91');
+
+        //check result
+        $this->assertInternalType('array', $result);
+        $this->assertCount(1, $result);
+        $this->assertInternalType('array', $result[0]);
+        $this->assertArrayHasKey('id', $result[0]);
+        $this->assertArrayHasKey('key1', $result[0]);
+        $this->assertArrayHasKey('key2', $result[0]);
+    }
     //------- end: Test function --------//
 }

@@ -1,7 +1,7 @@
 <?php
 namespace App\Services;
 
-class MongoService {
+class MongoService extends \Phalcon\Mvc\Micro {
 
     private $idDelimeter = ',';
     private $orderDelimeter = ',';
@@ -316,5 +316,38 @@ class MongoService {
 
         return $params;
         
+    }
+
+    protected function manageId($id)
+    {
+        $outputs = [];
+        $ids = explode($this->idDelimeter, $id);
+        foreach ($ids as $id) {
+            $outputs[] = new \MongoDB\BSON\ObjectID($id);
+        }
+        return $outputs;
+    }
+
+    //Method for get category detail
+    public function getDetailDataByIdLargeData($collection, $id)
+    {
+        $filter = [
+            '_id' => [
+                '$in' => $this->manageId($id)
+            ]
+        ];
+
+        $query = new \MongoDB\Driver\Query($filter);
+        $cursor = $this->mongoOrig->executeQuery($this->config->database->mongo->dbname.'.'.$collection, $query);
+        $outputs = [];
+        foreach ($cursor as $data) {
+             $id = (string)$data->_id;
+             $each = $this->myLibrary->objectToArray($data);
+             
+             $each['id'] = $id;
+             $outputs[] = $each; 
+        }
+        
+        return $outputs;
     }
 }
