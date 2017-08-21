@@ -14,12 +14,13 @@ class MongoService extends \Phalcon\Mvc\Micro {
         $output = [];
 
         if (!empty($model)) {
-            //add id to output
-            $output       = $model->toArray();
-            $output["id"] = (string)$model->_id;
+            $id           = (string)$model->_id;
+            $output       = $this->myLibrary->objectToArray($model);
+            $output['id'] = $id; 
+
+            //remove _id
             unset($output["_id"]);
         }
-        
         return $output;
     }
 
@@ -31,6 +32,7 @@ class MongoService extends \Phalcon\Mvc\Micro {
         foreach ($keys as $key) {
             $value = str_replace($key, '\\'.$key, $value);
         }
+
 
         return $value;
     }
@@ -114,6 +116,10 @@ class MongoService extends \Phalcon\Mvc\Micro {
             if ($value == 'null') {
                 $conditions[$key] = null;
             } else {
+                // if ($key == "id"){
+                //     $key   = "_id";
+                //     $value = new \MongoDB\BSON\ObjectId($value);
+                // }
                 $conditions[$key] = $value;
             }
         }
@@ -125,9 +131,17 @@ class MongoService extends \Phalcon\Mvc\Micro {
        //Method for create condition filter
     public function createConditionFilter($params, $allowFilter, $options=[])
     {
-       
         //Define output
         $conditions = [];
+
+        if (isset($params['id'])) {
+            $filterOptions = $this->getFilterAndOptionAllowFilterForId($params['id'], $allowFilter, $options);
+            $conditions    = $filterOptions['filters'];
+            $options       = $filterOptions['options'];
+            $allowFilter   = $filterOptions['allowFilters'];
+
+        }
+        
         foreach ($params as $key => $value) {
             //check allow filter
             if (in_array($key, $allowFilter)) {
@@ -144,9 +158,12 @@ class MongoService extends \Phalcon\Mvc\Micro {
                 } else {
                     $conditions = $this->manageFilterValue($key, $value, $conditions);
                 }
-            }
+            };
+            
             
         }
+
+
         
         return $conditions;
     }
@@ -201,13 +218,23 @@ class MongoService extends \Phalcon\Mvc\Micro {
     }
 
     //Method for get ids from datas
-    public function getAllIdFromDatas($dataObj, $format='string')
+    public function getAllIdFromDatas($dataObj, $format='string' , $getFeild=[])
     {
         //Define outputs
         $ids = [];
         if (!empty($dataObj)) {
+            $i = 0;
             foreach ($dataObj as $each) {
-                $ids[] = (string)$each->_id;
+               
+                if(!isset($getFeild[0])){
+                    $ids[$i] = (string)$each->_id;
+                }else{
+                    foreach ($getFeild as $key) {
+                        $ids[$i][$key] = $each->$key;
+                    }
+                }
+                $i++;
+                
             }
 
             //check format
@@ -265,23 +292,63 @@ class MongoService extends \Phalcon\Mvc\Micro {
         return $outputs;
     }
 
+    //Method for generate mongo id
+    public function createMongoId($id)
+    {
+        $output = [];
+
+        if (is_array($id)) {
+            foreach ($id as $each) {
+                $output[] = new \MongoDB\BSON\ObjectId($each);   
+            }
+
+            return $output;
+        } 
+
+        return new \MongoDB\BSON\ObjectId($id);
+
+    }
+
+    //Method for get filter and option
+    protected function getFilterAndOptionAllowFilterForId($id, $allowFilters, $options=[])
+    {
+        $ids     = explode($this->idDelimeter, $id);
+
+        if (count($ids) > 1) {
+            //multi array
+            $options['_id'] = '$in';
+        } else {
+            $ids = $ids[0];
+        }
+
+        $filters  = [
+            '_id' => $this->createMongoId($ids)
+        ];
+
+        //add _id to allow list
+        $allowFilters[] = "_id";
+
+        return [
+            'filters'      => $filters,
+            'options'      => $options,
+            'allowFilters' => $allowFilters,
+        ];
+    }
+
     //Method for get category detail
     public function getDetailDataById($model, $id, $allowFilter)
     {
-        //get id
-        $ids     = explode($this->idDelimeter, $id);
-        //create option
-        $options = ['id' => '$in'];
-        //create filter
-        $filter  = [
-            'id' => $ids
-        ];
-
+        // //get id
+        $filterOptions = $this->getFilterAndOptionAllowFilterForId($id, $allowFilter);
+        $filter        = $filterOptions['filters'];
+        $options       = $filterOptions['options'];
+        $allowFilter   = $filterOptions['allowFilters'];
+        
         //Create conditions
-        $conditions = $this->createConditionFilter($filter, $allowFilter, $options);
+        $conditions    = $this->createConditionFilter($filter, $allowFilter, $options);
         
         //get data
-        $datas      = $model->find($conditions);
+        $datas         = $model->find([$conditions]);
 
         return $datas;
     }
@@ -316,38 +383,5 @@ class MongoService extends \Phalcon\Mvc\Micro {
 
         return $params;
         
-    }
-
-    protected function manageId($id)
-    {
-        $outputs = [];
-        $ids = explode($this->idDelimeter, $id);
-        foreach ($ids as $id) {
-            $outputs[] = new \MongoDB\BSON\ObjectID($id);
-        }
-        return $outputs;
-    }
-
-    //Method for get category detail
-    public function getDetailDataByIdLargeData($collection, $id)
-    {
-        $filter = [
-            '_id' => [
-                '$in' => $this->manageId($id)
-            ]
-        ];
-
-        $query = new \MongoDB\Driver\Query($filter);
-        $cursor = $this->mongoOrig->executeQuery($this->config->database->mongo->dbname.'.'.$collection, $query);
-        $outputs = [];
-        foreach ($cursor as $data) {
-             $id = (string)$data->_id;
-             $each = $this->myLibrary->objectToArray($data);
-             
-             $each['id'] = $id;
-             $outputs[] = $each; 
-        }
-        
-        return $outputs;
     }
 }

@@ -5,8 +5,8 @@ use Phalcon\Mvc\Router;
 use Phalcon\Http\Request;
 use Phalcon\Http\Response;
 
-use Phalcon\Mvc\Collection\Manager;
-use Phalcon\Db\Adapter\MongoDB\Client;
+// use Phalcon\Mvc\Collection\Manager;
+// use Phalcon\Db\Adapter\MongoDB\Client;
 
 // Create a DI
 $di = new FactoryDefault();
@@ -67,31 +67,31 @@ $di->set('dispatcher', function(){
     return $dispatcher;
 });
 
-// Initialise the mongo DB connection.
-$di->setShared('mongo', function () {
-    /** @var \Phalcon\DiInterface $this */
-    $config = $this->getShared('config');
+// // Initialise the mongo DB connection.
+// $di->setShared('mongo', function () {
+//     /** @var \Phalcon\DiInterface $this */
+//     $config = $this->getShared('config');
 
-    if (!$config->database->mongo->username || !$config->database->mongo->password) {
-        $dsn = 'mongodb://' . $config->database->mongo->host.":". $config->database->mongo->port;
-    } else {
-        $dsn = sprintf(
-            'mongodb://%s:%s@%s:%s/%s',
-            $config->database->mongo->username,
-            $config->database->mongo->password,
-            $config->database->mongo->host,
-            $config->database->mongo->port,
-            $config->database->mongo->dbname
-        );
-    }
+//     if (!$config->database->mongo->username || !$config->database->mongo->password) {
+//         $dsn = 'mongodb://' . $config->database->mongo->host.":". $config->database->mongo->port;
+//     } else {
+//         $dsn = sprintf(
+//             'mongodb://%s:%s@%s:%s/%s',
+//             $config->database->mongo->username,
+//             $config->database->mongo->password,
+//             $config->database->mongo->host,
+//             $config->database->mongo->port,
+//             $config->database->mongo->dbname
+//         );
+//     }
 
-    $mongo = new Client($dsn);
+//     $mongo = new Client($dsn);
 
-    return $mongo->selectDatabase($config->database->mongo->dbname);
-});
+//     return $mongo->selectDatabase($config->database->mongo->dbname);
+// });
 
 // Initialise the mongo DB connection (original).
-$di->setShared('mongoOrig', function () {
+$di->setShared('mongo', function () {
     $config = $this->getShared('config');
 
     if (!$config->database->mongo->username || !$config->database->mongo->password) {
@@ -112,9 +112,9 @@ $di->setShared('mongoOrig', function () {
     return $mongo;
 });
 
-$di->set('collectionManager', function () {
-    return new Manager();
-}, true);
+// $di->set('collectionManager', function () {
+//     return new Manager();
+// }, true);
 
 // Register a "repository" service in the container
 $di->set('repository', function () {

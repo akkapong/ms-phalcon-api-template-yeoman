@@ -19,6 +19,10 @@
         <directory>./tests/category/CategoryRepositoryTest.php</directory>
     </testsuite> -->
 
+    <testsuite name="Model">
+        <directory>./tests/model/ModelsTest.php</directory>
+    </testsuite>
+
     <testsuite name="Service">
         <directory>./tests/services/MongoServiceTest.php</directory>
     </testsuite>
