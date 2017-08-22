@@ -155,4 +155,25 @@ class Models
 
         return true;
     }
+
+    //Method for get data by aggreate
+    public function aggregate($pipeline)
+    {
+        // Define output
+        $outputs = [];
+        // Command
+        $command = new \MongoDB\Driver\Command([
+            "aggregate" => $this->getSource(), 
+            "pipeline"  => $pipeline,
+            "cursor"    => new \StdClass,
+        ]);
+
+        // Result
+        $cursor = $this->mongo->executeCommand($this->config->database->mongo->dbname, $command);
+        
+        foreach ($cursor as $document) {
+            $outputs[] = $document;
+        }
+        return $outputs;
+    }
 }

@@ -496,5 +496,49 @@ class ModelsTest extends UnitTestCase
         //check result
         $this->assertFalse($result);
     }
+
+    public function testAggregate()
+    {
+        $res     = new StdClass;
+        $res->_id  = 'test';
+        $res->sum  = 5;
+
+        $coutRes = [$res];
+        //regiser class
+        $this->registerClass();
+
+        //mock mongo
+        $mongo = Mockery::mock('Mongo');
+        $mongo->shouldReceive('executeCommand')->andReturn($coutRes);
+
+        //register mongo
+        $this->di->set('mongo', $mongo, true);
+
+        $filter = [[
+            '$group' => [
+                '_id' => '$key',
+                'sum' => ['$sum' => 1],
+            ]
+        ]];
+
+        //create class
+        $class = $this->getMockBuilder('App\Models\Models')
+                    ->setMethods(['getSource'])
+                    ->getMock();
+
+        $class->method('getSource')
+            ->willReturn("model");
+
+
+        $result = $class->aggregate($filter);
+
+        //check result
+        $this->assertInternalType('array', $result);
+        $this->assertCount(1, $result);
+        $this->assertInternalType('object', $result[0]);
+        $this->assertEquals('test', $result[0]->_id);
+        $this->assertEquals(5, $result[0]->sum);
+
+    }
     //------- end: Test function --------//
 }
