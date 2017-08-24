@@ -9,10 +9,33 @@ use Phalcon\Validation\Validator\InclusionIn;
 
 class ApiController extends \Phalcon\Mvc\Micro
 {
+    public $cacheKey; 
+    public $saveCache = false;
 
     public function __construct()
     {
 
+    }
+
+    protected function getDataFromCache($method, $params)
+    {
+        //get cache key
+        $this->cacheKey = $this->cacheService->generateCacheKey($this->service, $method, $params);
+        //check have key
+        if ($this->cacheService->checkCache($this->cacheKey)) {
+            $datas = $this->cacheService->getCache($this->cacheKey);
+            return $datas;
+        } 
+        $this->saveCache = true; 
+        return null;
+    }
+
+    protected function addDataToCache($data)
+    {
+        if ($this->saveCache) {
+            return $this->cacheService->addCache($this->cacheKey, $data);
+        }
+        return false;
     }
 
     protected function validateApi($rules, $default = [], $input = [])
@@ -171,7 +194,7 @@ class ApiController extends \Phalcon\Mvc\Micro
                 'code' => $statusCode,
                 'text' => $statusText,
             ],
-            'data'   => $output,
+            'data'   => $output['data'],
         ];
 
         //add limit offset to total 
@@ -181,9 +204,12 @@ class ApiController extends \Phalcon\Mvc\Micro
         if (isset($params['offset'])) {
             $returnOutput['total']['offset']      = (int)$params['offset'];
         }
-        if (isset($params['totalRecord'])) {
-            $returnOutput['total']['totalRecord'] = (int)$params['totalRecord'];
+        if (isset($output['totalRecord'])) {
+            $returnOutput['total']['totalRecord'] = (int)$output['totalRecord'];
         }
+
+        //add to cache
+        $this->addDataToCache($returnOutput);
 
         return $this->responseData($returnOutput, $code);
     }

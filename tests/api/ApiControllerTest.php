@@ -20,6 +20,102 @@ class ApiControllerTest extends UnitTestCase
     //------- end: Method for support test --------//
 
     //------- start: Test function ---------//
+    public function testGetDataFromCacheHaveCache()
+    {
+        //mock cache service
+        $cacheService = Mockery::mock('CacheService');
+        $cacheService->shouldReceive('generateCacheKey')->andReturn('Test-getTest-d8559f62f144f5a870464f7a4f39f39c');
+        $cacheService->shouldReceive('checkCache')->andReturn(true);
+        $cacheService->shouldReceive('getCache')->andReturn("Test");
+
+        //register
+        $this->di->set('cacheService', $cacheService, true);
+
+        //create class
+        $class          = new ApiController();
+        $class->service = 'Test';
+
+        //call method
+        $result = $this->callMethod(
+            $class,
+            'getDataFromCache',
+            ["getTest", ['a' => '11']]
+        );
+
+        //check result
+        $this->assertFalse($class->saveCache);
+        $this->assertEquals('Test', $result);
+    }
+
+    public function testGetDataFromCacheNotHaveCache()
+    {
+        //mock cache service
+        $cacheService = Mockery::mock('CacheService');
+        $cacheService->shouldReceive('generateCacheKey')->andReturn('Test-getTest-d8559f62f144f5a870464f7a4f39f39c');
+        $cacheService->shouldReceive('checkCache')->andReturn(false);
+
+        //register
+        $this->di->set('cacheService', $cacheService, true);
+
+        //create class
+        $class          = new ApiController();
+        $class->service = 'Test';
+
+        //call method
+        $result = $this->callMethod(
+            $class,
+            'getDataFromCache',
+            ["getTest", ['a' => '11']]
+        );
+
+        //check result
+        $this->assertTrue($class->saveCache);
+        $this->assertEquals('Test-getTest-d8559f62f144f5a870464f7a4f39f39c', $class->cacheKey);
+        $this->assertNull($result);
+    }
+
+    public function testAddDataToCacheSaveCache()
+    {
+        //mock cache service
+        $cacheService = Mockery::mock('CacheService');
+        $cacheService->shouldReceive('addCache')->andReturn(true);
+
+        //register
+        $this->di->set('cacheService', $cacheService, true);
+
+        //create class
+        $class = new ApiController();
+        $class->saveCache = true;
+        $class->cacheKey = 'Test-getTest-d8559f62f144f5a870464f7a4f39f39c';
+
+        //call method
+        $result = $this->callMethod(
+            $class,
+            'addDataToCache',
+            ["Test"]
+        );
+
+        //check result
+        $this->assertTrue($result);
+    }
+
+    public function testAddDataToCacheNotSaveCache()
+    {
+        //create class
+        $class = new ApiController();
+        $class->saveCache = false;
+
+        //call method
+        $result = $this->callMethod(
+            $class,
+            'addDataToCache',
+            ["Test"]
+        );
+
+        //check result
+        $this->assertFalse($result);
+    }
+
     public function testValidateApiError()
     {
         //Define parameter
@@ -452,7 +548,7 @@ class ApiControllerTest extends UnitTestCase
         //check result
         $this->assertEquals($result, "MOCK RESULT");
     }
-
+    
     public function testOutputWitTotal()
     {
         //mock message
@@ -469,16 +565,22 @@ class ApiControllerTest extends UnitTestCase
 
         //create class
         $api = $this->getMockBuilder('App\Controllers\ApiController')
-                    ->setMethods(['responseData'])
+                    ->setMethods(['responseData', 'addDataToCache'])
                     ->getMock();
 
         $api->method('responseData')
             ->willReturn("MOCK RESULT");
 
+        $api->method('addDataToCache')
+            ->willReturn(true);
+
         $result = $this->callMethod(
             $api,
             'output',
-            ["test", ['limit' => 10, 'offset' => 0, 'totalRecord' => 2]]
+            [[
+                'data'        => "Test",
+                'totalRecord' => 2,
+            ], ['limit' => 10, 'offset' => 0]]
         );
 
         //check result
@@ -501,16 +603,19 @@ class ApiControllerTest extends UnitTestCase
 
         //create class
         $api = $this->getMockBuilder('App\Controllers\ApiController')
-                    ->setMethods(['responseData'])
+                    ->setMethods(['responseData', 'addDataToCache'])
                     ->getMock();
 
         $api->method('responseData')
             ->willReturn("MOCK RESULT");
 
+        $api->method('addDataToCache')
+            ->willReturn(true);
+
         $result = $this->callMethod(
             $api,
             'output',
-            ["test"]
+            [['data' => 'Test']]
         );
 
         //check result

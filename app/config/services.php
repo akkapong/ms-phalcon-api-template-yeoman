@@ -8,6 +8,9 @@ use Phalcon\Http\Response;
 // use Phalcon\Mvc\Collection\Manager;
 // use Phalcon\Db\Adapter\MongoDB\Client;
 
+use Phalcon\Cache\Backend\File as BackFile;
+use Phalcon\Cache\Frontend\Data as FrontData;
+
 // Create a DI
 $di = new FactoryDefault();
 
@@ -138,6 +141,29 @@ $di->set('myLibrary', function () {
 $di->set('mongoService', function () {
     $myLib =  new App\Services\MongoService();
     return $myLib;
+});
+
+// Register a "cacheService" service in the container
+$di->set('cacheService', function () {
+    $cacheService =  new App\Services\CacheService();
+    return $cacheService;
+});
+
+// Register a "cacheService" service in the container
+$di->set('cache', function () {
+    $config = $this->getShared('config');
+
+    $frontCache = new FrontData(
+        [
+            'lifetime' => $config->cache->lifeTime,
+        ]
+    );
+
+    $cache = new BackFile(
+        $frontCache,
+        $config->cache->configs->toArray()
+    );
+    return $cache;
 });
 
 // Register a "response" service in the container

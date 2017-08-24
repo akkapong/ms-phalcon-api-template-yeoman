@@ -25,6 +25,7 @@
 
     <testsuite name="Service">
         <directory>./tests/services/MongoServiceTest.php</directory>
+        <directory>./tests/services/CacheServiceTest.php</directory>
     </testsuite>
 
     <testsuite name="Library">
