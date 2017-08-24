@@ -6,3 +6,4 @@ Thumbs.db
 composer.lock
 /vendor
 /report
+/app/cache
