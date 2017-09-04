@@ -31,19 +31,28 @@ class Models
     //method for find data
     public function find($filter)
     {
+        $outputs = [];
         $query = new \MongoDB\Driver\Query($filter[0], $filter);
         $cursor = $this->mongo->executeQuery($this->config->database->mongo->dbname.'.'.$this->getSource(), $query);
-        
-        return $cursor;
+
+        foreach ($cursor as $each) {
+            $outputs[] = $each;
+        }
+        // exit;
+        return $outputs;
     }
 
     //method for assign data to model
-    protected function assignDataToModel($dataObj, $filter)
+    public function assignDataToModel($dataObj, $filter)
     {
         foreach ($dataObj as $key => $value) {
             if ( property_exists($this, $key) ) {
                 $this->{$key} = $value;
             }
+        }
+        
+        if (!empty($dataObj->_id)) {
+            $this->_id = $dataObj->_id;
         }
         $this->lastQuery = $filter;
         return $this;
@@ -55,7 +64,7 @@ class Models
         $output = null;
         $id     = $this->mongoService->createMongoId($id);
         $filter = ['_id' => $id];
-        $data   = $this->find([$filter])->toArray();
+        $data   = $this->find([$filter]);
 
         if (!empty($data)) {
             $output = $data[0];
@@ -82,9 +91,9 @@ class Models
         $updates = new \StdClass;
         $datas =  get_object_vars($this);
         foreach ($datas as $key => $value) {
-            // if ($key == '_handlers') {
-            //     continue;
-            // }
+            if ($key == 'lastQuery') {
+                continue;
+            }
             if (is_string($value) || is_array($value)) {
                 $updates->$key = $value;
             }
@@ -99,7 +108,7 @@ class Models
     public function save()
     {
         $datas  = $this->getOnlyData();
-        // print_r($datas); exit;
+      
         if (property_exists($this, 'lastQuery')) {
             //update
             $bulk         = new \MongoDB\Driver\BulkWrite;
@@ -113,7 +122,7 @@ class Models
 
             $cursor = $this->mongo->executeBulkWrite($this->config->database->mongo->dbname.'.'.$this->getSource(), $bulk, $writeConcern);
 
-            $this->_id = $this->lastQuery['_id'];
+            //$this->_id = $this->lastQuery['_id'];
 
             unset($this->lastQuery);
 

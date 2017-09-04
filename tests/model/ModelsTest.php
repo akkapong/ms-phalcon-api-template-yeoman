@@ -60,7 +60,7 @@ class ModelsTest extends UnitTestCase
 
         //mock mongo
         $mongo = Mockery::mock('Mongo');
-        $mongo->shouldReceive('executeQuery')->andReturn('Test');
+        $mongo->shouldReceive('executeQuery')->andReturn(['0' => 'Test']);
 
         //register mongo
         $this->di->set('mongo', $mongo, true);
@@ -79,9 +79,9 @@ class ModelsTest extends UnitTestCase
 
 
         $result = $class->find([$filter]);
-
+    
         //check result
-        $this->assertEquals('Test', $result);
+        $this->assertEquals('Test', $result[0]);
 
 
     }
@@ -90,17 +90,17 @@ class ModelsTest extends UnitTestCase
     {
         //regiser class
         $this->registerClass();
-
         //create class
         $class = new Models();
         $class->key1 = '';
         $class->key2 = '';
-
         //define parameter
-        $dataObj = [
-            'key1' => 'XXXX',
-            'key3' => 'YYYY',
-        ];
+        
+        $dataObj = new StdClass;
+        $dataObj->key1 = 'XXXX';
+        $dataObj->key3 = 'YYYY';
+        $dataObj->_id = '1';
+
 
         $filter = ['name' => 'test'];
         //call method
@@ -121,9 +121,6 @@ class ModelsTest extends UnitTestCase
         //regiser class
         $this->registerClass();
 
-        //mock find
-        $find = Mockery::mock('Find');
-        $find->shouldReceive('toArray')->andReturn([]);
 
         $filter = [
             'name' => 'Test'
@@ -135,7 +132,7 @@ class ModelsTest extends UnitTestCase
                     ->getMock();
 
         $class->method('find')
-            ->willReturn($find);
+            ->willReturn([]);
 
 
         $result = $class->findById([$filter]);
@@ -148,14 +145,6 @@ class ModelsTest extends UnitTestCase
     {
         //regiser class
         $this->registerClass();
-
-        //mock find
-        $find = Mockery::mock('Find');
-        $find->shouldReceive('toArray')->andReturn([
-            [
-                'name' => 'test'
-            ]
-        ]);
 
         //mock res
         $res = Mockery::mock('Response');
@@ -170,7 +159,9 @@ class ModelsTest extends UnitTestCase
                     ->getMock();
 
         $class->method('find')
-            ->willReturn($find);
+            ->willReturn([
+                '0' => 'test'
+            ]);
 
         $class->method('assignDataToModel')
             ->willReturn($res);
@@ -253,6 +244,7 @@ class ModelsTest extends UnitTestCase
         $class->_id  = 'id';
         $class->key1 = '111';
         $class->key2 = '222';
+        $class->lastQuery = 'data';
         $class->key3 = [
             'sub1' => 's11',
             'sub2' => 's22',
